@@ -1,3 +1,4 @@
+from asyncio import new_event_loop
 import threading
 
 from event_service_utils.logging.decorators import timer_logger
@@ -47,11 +48,11 @@ class WorkerProfileRating(BaseEventDrivenCMDService):
 
         self.rating_module = self.available_rating_modules[self.rating_class](QOS_CRITERIA)
 
-    # def publish_some_event_type(self, event_data):
-    #     self.publish_event_type_to_stream(event_type=PUB_EVENT_TYPE_SOME_EVENT_TYPE, new_event_data=event_data)
+    def publish_worker_profile_rated(self, worker_rating):
+        worker_rating['id'] = self.service_based_random_event_id()
+        self.publish_event_type_to_stream(event_type=PUB_EVENT_TYPE_WORKER_PROFILE_RATED, new_event_data=worker_rating)
 
     def process_service_worker_announced(self, worker_data):
-
         # 'worker': {
         #     'service_type': 'ColorDetection',
         #     'stream_key': 'clrworker-key',
@@ -63,6 +64,7 @@ class WorkerProfileRating(BaseEventDrivenCMDService):
         service_type = worker_data['service_type']
         stream_key = worker_data['stream_key']
         worker_rating = self.rating_module.get_worker_profile_rating(worker_data)
+        self.publish_worker_profile_rated(worker_rating)
 
     def process_event_type(self, event_type, event_data, json_msg):
         if not super(WorkerProfileRating, self).process_event_type(event_type, event_data, json_msg):
@@ -74,6 +76,7 @@ class WorkerProfileRating(BaseEventDrivenCMDService):
         super(WorkerProfileRating, self).log_state()
         self.logger.info(f'Service name: {self.name}')
         self.logger.info(f'Rating class: {self.rating_class}')
+        self.logger.info(f'Rating range (by Service Type): {self.rating_module.criteria_range_by_service_type}')
 
         # function for simple logging of python dictionary
         # self._log_dict('Some Dictionary', self.some_dict)

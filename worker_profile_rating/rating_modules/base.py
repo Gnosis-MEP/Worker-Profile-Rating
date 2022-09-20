@@ -1,5 +1,5 @@
 class RatingModuleBase(object):
-    def __init__(self, qos_criteria):
+    def __init__(self, qos_criteria, default_criteria_ranges):
         self.qos_criteria = qos_criteria
         self.criteria_range_by_service_type = {}
         self.rating_range = (0, 10)
@@ -13,6 +13,7 @@ class RatingModuleBase(object):
             }
         )
 
+        changed_criterion = []
         # 'worker': {
         #     'service_type': 'ColorDetection',
         #     'stream_key': 'clrworker-key',
@@ -31,8 +32,11 @@ class RatingModuleBase(object):
                 else:
                     if value < criterion_range[0]:
                         criterion_range[0] = value
+                        changed_criterion.append(criterion)
                     if value > criterion_range[1]:
                         criterion_range[1] = value
+                        changed_criterion.append(criterion)
+        return changed_criterion
 
     def get_criterion_crisp_rating_for_service_type(self, service_type, criterion, value):
         criterion_range = self.criteria_range_by_service_type.get(service_type, {}).get(criterion)

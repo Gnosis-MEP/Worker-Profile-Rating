@@ -16,8 +16,13 @@ class RatingModuleFuzzy(RatingModuleBase):
         }
 
     def calculate_worker_criterion_rating_from_crisp_rating(self, crisp_rating):
-        # use highest activation / lowervalue in case of ties
-        # closest_mf = self.criteria_rating_mfs['low']
+        """
+            closest to modal similar to:
+            Triantaphyllou, Evangelos, and Chi-Tun Lin.
+                "Development and evaluation of five fuzzy multiattribute decision-making methods."
+                international Journal of Approximate reasoning 14.4 (1996): 281-310.)
+        """
+        #
         closest_mf = None
         for modal, mf_l in self.sorted_mfs_modals.items():
             if modal < crisp_rating:
