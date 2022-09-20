@@ -4,6 +4,15 @@ from event_service_utils.logging.decorators import timer_logger
 from event_service_utils.services.event_driven import BaseEventDrivenCMDService
 from event_service_utils.tracing.jaeger import init_tracer
 
+from worker_profile_rating.conf import (
+    LISTEN_EVENT_TYPE_SERVICE_WORKER_ANNOUNCED,
+    PUB_EVENT_TYPE_WORKER_PROFILE_RATED,
+    RATING_CLASS,
+    QOS_CRITERIA,
+)
+from worker_profile_rating.rating_modules.crisp import RatingModuleCrisp
+from worker_profile_rating.rating_modules.fuzzy import RatingModuleFuzzy
+
 
 class WorkerProfileRating(BaseEventDrivenCMDService):
     def __init__(self,
@@ -25,30 +34,47 @@ class WorkerProfileRating(BaseEventDrivenCMDService):
         )
         self.cmd_validation_fields = ['id']
         self.data_validation_fields = ['id']
+        self.rating_class = RATING_CLASS
+        self.rating_module = None
+        self.setup_rating_module()
+
+
+    def setup_rating_module(self):
+        self.available_rating_modules = {
+            'Crisp': RatingModuleCrisp,
+            'Fuzzy': RatingModuleFuzzy,
+        }
+
+        self.rating_module = self.available_rating_modules[self.rating_class](QOS_CRITERIA)
 
     # def publish_some_event_type(self, event_data):
     #     self.publish_event_type_to_stream(event_type=PUB_EVENT_TYPE_SOME_EVENT_TYPE, new_event_data=event_data)
 
-    @timer_logger
-    def process_data_event(self, event_data, json_msg):
-        if not super(WorkerProfileRating, self).process_data_event(event_data, json_msg):
-            return False
-        # do something here
-        pass
+    def process_service_worker_announced(self, worker_data):
+
+        # 'worker': {
+        #     'service_type': 'ColorDetection',
+        #     'stream_key': 'clrworker-key',
+        #     'queue_limit': 100,
+        #     'throughput': 1,
+        #     'accuracy': 0.9,
+        #     'energy_consumption': 10,
+        # }
+        service_type = worker_data['service_type']
+        stream_key = worker_data['stream_key']
+        worker_rating = self.rating_module.get_worker_profile_rating(worker_data)
 
     def process_event_type(self, event_type, event_data, json_msg):
         if not super(WorkerProfileRating, self).process_event_type(event_type, event_data, json_msg):
             return False
-        if event_type == 'SomeEventType':
-            # do some processing
-            pass
-        elif event_type == 'OtherEventType':
-            # do some other processing
-            pass
+        if event_type == LISTEN_EVENT_TYPE_SERVICE_WORKER_ANNOUNCED:
+            self.process_service_worker_announced(event_data['worker'])
 
     def log_state(self):
         super(WorkerProfileRating, self).log_state()
         self.logger.info(f'Service name: {self.name}')
+        self.logger.info(f'Rating class: {self.rating_class}')
+
         # function for simple logging of python dictionary
         # self._log_dict('Some Dictionary', self.some_dict)
 
@@ -56,8 +82,5 @@ class WorkerProfileRating(BaseEventDrivenCMDService):
         super(WorkerProfileRating, self).run()
         self.log_state()
         self.cmd_thread = threading.Thread(target=self.run_forever, args=(self.process_cmd,))
-        self.data_thread = threading.Thread(target=self.run_forever, args=(self.process_data,))
         self.cmd_thread.start()
-        self.data_thread.start()
         self.cmd_thread.join()
-        self.data_thread.join()
