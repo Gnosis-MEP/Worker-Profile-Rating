@@ -1,7 +1,9 @@
 class RatingModuleBase(object):
-    def __init__(self, qos_criteria, default_criteria_ranges):
+    def __init__(self, qos_criteria, default_criteria_ranges=None):
         self.qos_criteria = qos_criteria
-        self.criteria_range_by_service_type = {}
+        if default_criteria_ranges is None:
+            default_criteria_ranges = {}
+        self.criteria_range_by_service_type = default_criteria_ranges
         self.rating_range = (0, 10)
 
     def update_criteria_range_from_worker(self, worker_data):

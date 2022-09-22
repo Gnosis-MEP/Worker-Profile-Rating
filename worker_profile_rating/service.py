@@ -10,6 +10,7 @@ from worker_profile_rating.conf import (
     PUB_EVENT_TYPE_WORKER_PROFILE_RATED,
     RATING_CLASS,
     QOS_CRITERIA,
+    DEFAULT_CRITERIA_RANGE_BY_SERVICE_TYPE
 )
 from worker_profile_rating.rating_modules.crisp import RatingModuleCrisp
 from worker_profile_rating.rating_modules.fuzzy import RatingModuleFuzzy
@@ -46,7 +47,7 @@ class WorkerProfileRating(BaseEventDrivenCMDService):
             'Fuzzy': RatingModuleFuzzy,
         }
 
-        self.rating_module = self.available_rating_modules[self.rating_class](QOS_CRITERIA)
+        self.rating_module = self.available_rating_modules[self.rating_class](QOS_CRITERIA, DEFAULT_CRITERIA_RANGE_BY_SERVICE_TYPE)
 
     def publish_worker_profile_rated(self, worker_rating):
         worker_rating['id'] = self.service_based_random_event_id()
@@ -76,10 +77,7 @@ class WorkerProfileRating(BaseEventDrivenCMDService):
         super(WorkerProfileRating, self).log_state()
         self.logger.info(f'Service name: {self.name}')
         self.logger.info(f'Rating class: {self.rating_class}')
-        self.logger.info(f'Rating range (by Service Type): {self.rating_module.criteria_range_by_service_type}')
-
-        # function for simple logging of python dictionary
-        # self._log_dict('Some Dictionary', self.some_dict)
+        self._log_dict(f'Rating range (by Service Type)', self.rating_module.criteria_range_by_service_type)
 
     def run(self):
         super(WorkerProfileRating, self).run()
