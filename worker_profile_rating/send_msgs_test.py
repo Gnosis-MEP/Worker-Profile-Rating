@@ -7,7 +7,7 @@ from worker_profile_rating.conf import (
     REDIS_ADDRESS,
     REDIS_PORT,
     SERVICE_STREAM_KEY,
-    # LISTEN_EVENT_TYPE_SOME_EVENT_TYPE
+    LISTEN_EVENT_TYPE_SERVICE_WORKER_ANNOUNCED
 )
 
 
@@ -27,17 +27,51 @@ def main():
     # new_event_type_cmd = stream_factory.create(PUB_EVENT_TYPE_NEW_EVENT_TYPE, stype='streamOnly')
 
     # for testing sending msgs that the service listens to:
-    # import ipdb; ipdb.set_trace()
-    # some_event_type_cmd = stream_factory.create(LISTEN_EVENT_TYPE_SOME_EVENT_TYPE, stype='streamOnly')
-    # some_event_type_cmd.write_events(
-    #     new_msg(
-    #         {
-    #             'some': 'thing',
-    #             'other': 'thing',
-    #         }
-    #     )
-    # )
-    # import ipdb; ipdb.set_trace()
+    import ipdb; ipdb.set_trace()
+    worker_announce_cmd = stream_factory.create(LISTEN_EVENT_TYPE_SERVICE_WORKER_ANNOUNCED, stype='streamOnly')
+    worker_announce_cmd.write_events(
+        new_msg(
+            {
+                'worker': {
+                    'service_type': 'SomeService',
+                    'stream_key': 'SomeServiceA',
+                    'queue_limit': 100,
+                    'throughput': 20,
+                    'accuracy': 0.7,
+                    'energy_consumption': 100,
+                }
+            }
+        )
+    )
+    worker_announce_cmd.write_events(
+        new_msg(
+            {
+                'worker': {
+                    'service_type': 'SomeService',
+                    'stream_key': 'SomeServiceB',
+                    'queue_limit': 100,
+                    'throughput': 10,
+                    'accuracy': 0.9,
+                    'energy_consumption': 60,
+                }
+            }
+        )
+    )
+    worker_announce_cmd.write_events(
+        new_msg(
+            {
+                'worker': {
+                    'service_type': 'AnotherService',
+                    'stream_key': 'AnotherServiceC',
+                    'queue_limit': 100,
+                    'throughput': 15,
+                    'accuracy': 0.6,
+                    'energy_consumption': 120,
+                }
+            }
+        )
+    )
+    import ipdb; ipdb.set_trace()
 
     # read published events output
     # events = new_event_type_cmd.read_events()

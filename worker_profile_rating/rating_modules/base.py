@@ -43,6 +43,9 @@ class RatingModuleBase(object):
     def get_criterion_crisp_rating_for_service_type(self, service_type, criterion, value):
         criterion_range = self.criteria_range_by_service_type.get(service_type, {}).get(criterion)
         lower, upper = criterion_range
+        if lower == upper and lower == value:
+            return self.rating_range[1]
+
         norm_upper_lower = (upper - lower)
         norm = (value - lower) / (upper - lower)
         crisp_rating = norm * 10
@@ -71,6 +74,6 @@ class RatingModuleBase(object):
                 'stream_key': worker_data['stream_key'],
             }
         }
-        base_profile_rating.update(self.get_worker_qos_criteria_ratings(worker_data))
+        base_profile_rating['worker'].update(self.get_worker_qos_criteria_ratings(worker_data))
         return base_profile_rating
 

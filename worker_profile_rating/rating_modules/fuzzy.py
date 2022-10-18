@@ -1,14 +1,14 @@
 from worker_profile_rating.rating_modules.base import RatingModuleBase
 
 class RatingModuleFuzzy(RatingModuleBase):
-    def __init__(self, qos_criteria):
-        super().__init__(qos_criteria)
+    def __init__(self, qos_criteria, default_criteria_ranges=None):
+        super().__init__(qos_criteria, default_criteria_ranges)
         self.criteria_rating_mfs = {
             'high': (7, 9, 10), # 9, 10
             'medium_high': (5, 7, 9), # 7, 8
             'medium': (3, 5, 7), # 5, 6
             'medium_low': (1, 3, 5), # 3, 4
-            'low': (0, 1, 3), # 0, 1, 2
+            'low': (1, 1, 3), # 1, 1, 2 (no 0 to avoid division-by-zero issues)
         }
         self.sorted_mfs_modals = {
             v[1]: k for k, v in
@@ -17,7 +17,7 @@ class RatingModuleFuzzy(RatingModuleBase):
 
     def calculate_worker_criterion_rating_from_crisp_rating(self, crisp_rating):
         """
-            closest to modal similar to:
+            closest to modal, similar to:
             Triantaphyllou, Evangelos, and Chi-Tun Lin.
                 "Development and evaluation of five fuzzy multiattribute decision-making methods."
                 international Journal of Approximate reasoning 14.4 (1996): 281-310.)
