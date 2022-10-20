@@ -24,18 +24,19 @@ QOS_CRITERIA = config('QOS_CRITERIA', default=DEFAULT_QOS_CRITERIA, cast=Csv())
 def cast_default_criteria_range_by_service_type(value):
     ret = {}
 
-    for service_type_and_criterias in value.split(';'):
-        service_type_ranges = {}
-        service_type, criteria_list = service_type_and_criterias.split('/')
-        for criterion_and_val in criteria_list.split(','):
-            criterion, val_list = criterion_and_val.split(':')
-            lower, upper = [float(x) for x in val_list.split('_')]
-            service_type_ranges[criterion] = [lower, upper]
+    if value != '':
+        for service_type_and_criterias in value.split(';'):
+            service_type_ranges = {}
+            service_type, criteria_list = service_type_and_criterias.split('/')
+            for criterion_and_val in criteria_list.split(','):
+                criterion, val_list = criterion_and_val.split(':')
+                lower, upper = [float(x) for x in val_list.split('_')]
+                service_type_ranges[criterion] = [lower, upper]
 
-        ret[service_type] = service_type_ranges
+            ret[service_type] = service_type_ranges
     return ret
 
-DEFAULT_CRITERIA_RANGE_BY_SERVICE_TYPE = config('DEFAULT_CRITERIA_RANGE_BY_SERVICE_TYPE', cast=cast_default_criteria_range_by_service_type)
+DEFAULT_CRITERIA_RANGE_BY_SERVICE_TYPE = config('DEFAULT_CRITERIA_RANGE_BY_SERVICE_TYPE', cast=cast_default_criteria_range_by_service_type, default='')
 
 
 
