@@ -15,14 +15,25 @@ class RatingModuleFuzzy(RatingModuleBase):
             sorted(self.criteria_rating_mfs.items(), key=lambda dt: dt[1][1])
         }
 
-    def calculate_worker_criterion_rating_from_crisp_rating(self, crisp_rating):
-        """
-            closest to modal, similar to:
-            Triantaphyllou, Evangelos, and Chi-Tun Lin.
-                "Development and evaluation of five fuzzy multiattribute decision-making methods."
-                international Journal of Approximate reasoning 14.4 (1996): 281-310.)
-        """
-        #
+    def get_criterion_crisp_rating_for_service_type(self, service_type, criterion, value):
+        target_lower, target_upper = self.rating_range
+        criterion_range = self.criteria_range_by_service_type.get(service_type, {}).get(criterion)
+        origin_lower, origin_upper = criterion_range
+        if origin_lower == origin_upper and origin_lower == value:
+            return target_upper
+
+        diff_to_origin_lower = (value - origin_lower)
+        target_difference = (target_upper - target_lower)
+        origin_difference = (origin_upper - origin_lower)
+
+        norm_incomplete = diff_to_origin_lower * target_difference / origin_difference
+
+        norm = target_lower + norm_incomplete
+        crisp_rating = round(norm)
+        return crisp_rating
+
+
+    def get_closest_mf_to_rating_by_modal(self, crisp_rating):
         closest_mf = None
         for modal, mf_l in self.sorted_mfs_modals.items():
             if modal < crisp_rating:
@@ -36,3 +47,13 @@ class RatingModuleFuzzy(RatingModuleBase):
 
         return self.criteria_rating_mfs[closest_mf]
 
+
+    def calculate_worker_criterion_rating_for_service_type(self, service_type, criterion, worker_value):
+        """
+            closest to modal, similar to:
+            Triantaphyllou, Evangelos, and Chi-Tun Lin.
+                "Development and evaluation of five fuzzy multiattribute decision-making methods."
+                international Journal of Approximate reasoning 14.4 (1996): 281-310.)
+        """
+        crisp_rating = self.get_criterion_crisp_rating_for_service_type(service_type, criterion, worker_value)
+        return self.get_closest_mf_to_rating_by_modal(crisp_rating)

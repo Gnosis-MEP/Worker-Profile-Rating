@@ -4,7 +4,7 @@ class RatingModuleBase(object):
         if default_criteria_ranges is None:
             default_criteria_ranges = {}
         self.criteria_range_by_service_type = default_criteria_ranges
-        self.rating_range = (0, 10)
+        self.rating_range = (1, 10)
 
     def update_criteria_range_from_worker(self, worker_data):
         service_type = worker_data['service_type']
@@ -40,18 +40,7 @@ class RatingModuleBase(object):
                         changed_criterion.append(criterion)
         return changed_criterion
 
-    def get_criterion_crisp_rating_for_service_type(self, service_type, criterion, value):
-        criterion_range = self.criteria_range_by_service_type.get(service_type, {}).get(criterion)
-        lower, upper = criterion_range
-        if lower == upper and lower == value:
-            return self.rating_range[1]
-
-        norm_upper_lower = (upper - lower)
-        norm = (value - lower) / (upper - lower)
-        crisp_rating = norm * 10
-        return crisp_rating
-
-    def calculate_worker_criterion_rating_from_crisp_rating(self, crisp_rating):
+    def calculate_worker_criterion_rating_for_service_type(self, service_type, criterion, worker_value):
         raise NotImplemented()
 
     def get_worker_qos_criteria_ratings(self, worker_data):
@@ -62,8 +51,7 @@ class RatingModuleBase(object):
             if worker_value is None:
                 continue
 
-            crisp_rating = self.get_criterion_crisp_rating_for_service_type(service_type, criterion, worker_value)
-            ratings[criterion] = self.calculate_worker_criterion_rating_from_crisp_rating(crisp_rating)
+            ratings[criterion] = self.calculate_worker_criterion_rating_for_service_type(service_type, criterion, worker_value)
         return ratings
 
     def get_worker_profile_rating(self, worker_data):
