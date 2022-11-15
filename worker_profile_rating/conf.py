@@ -16,6 +16,8 @@ SERVICE_STREAM_KEY = config('SERVICE_STREAM_KEY')
 
 RATING_CLASS = config('RATING_CLASS')
 
+SCALE_RATINGS = config('SCALE_RATINGS', default=True)
+
 DEFAULT_QOS_CRITERIA = 'energy_consumption,throughput,accuracy'
 
 QOS_CRITERIA = config('QOS_CRITERIA', default=DEFAULT_QOS_CRITERIA, cast=Csv())
@@ -37,7 +39,6 @@ def cast_default_criteria_range_by_service_type(value):
     return ret
 
 DEFAULT_CRITERIA_RANGE_BY_SERVICE_TYPE = config('DEFAULT_CRITERIA_RANGE_BY_SERVICE_TYPE', cast=cast_default_criteria_range_by_service_type, default='')
-
 
 
 LISTEN_EVENT_TYPE_SERVICE_WORKER_ANNOUNCED = config('LISTEN_EVENT_TYPE_SERVICE_WORKER_ANNOUNCED')

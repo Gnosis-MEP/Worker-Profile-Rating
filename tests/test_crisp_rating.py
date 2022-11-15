@@ -24,6 +24,18 @@ class TestRatingModuleCrisp(TestCase):
         ret1 = self.rating.calculate_worker_criterion_rating_for_service_type(service_type, criterion, 0.1)
         ret2 = self.rating.calculate_worker_criterion_rating_for_service_type(service_type, criterion, 0.5)
         ret3 = self.rating.calculate_worker_criterion_rating_for_service_type(service_type, criterion, 1)
+        self.assertEqual(ret1, 1)
+        self.assertEqual(ret2, 5)
+        self.assertEqual(ret3, 10)
+
+    def test_get_criterion_crisp_rating_for_service_type_if_not_using_scaled_rating(self):
+        self.rating.rating_range = (1, 10)
+        self.rating.scale_ratings = False
+        service_type = 'service_type'
+        criterion = 'accuracy'
+        ret1 = self.rating.calculate_worker_criterion_rating_for_service_type(service_type, criterion, 0.1)
+        ret2 = self.rating.calculate_worker_criterion_rating_for_service_type(service_type, criterion, 0.5)
+        ret3 = self.rating.calculate_worker_criterion_rating_for_service_type(service_type, criterion, 1)
         self.assertEqual(ret1, 0.1)
         self.assertEqual(ret2, 0.5)
         self.assertEqual(ret3, 1)

@@ -10,7 +10,8 @@ from worker_profile_rating.conf import (
     PUB_EVENT_TYPE_WORKER_PROFILE_RATED,
     RATING_CLASS,
     QOS_CRITERIA,
-    DEFAULT_CRITERIA_RANGE_BY_SERVICE_TYPE
+    DEFAULT_CRITERIA_RANGE_BY_SERVICE_TYPE,
+    SCALE_RATINGS
 )
 from worker_profile_rating.rating_modules.crisp import RatingModuleCrisp
 from worker_profile_rating.rating_modules.fuzzy import RatingModuleFuzzy
@@ -47,7 +48,11 @@ class WorkerProfileRating(BaseEventDrivenCMDService):
             'Fuzzy': RatingModuleFuzzy,
         }
 
-        self.rating_module = self.available_rating_modules[self.rating_class](QOS_CRITERIA, DEFAULT_CRITERIA_RANGE_BY_SERVICE_TYPE)
+        self.rating_module = self.available_rating_modules[self.rating_class](
+            qos_criteria=QOS_CRITERIA,
+            scale_ratings=SCALE_RATINGS,
+            default_criteria_ranges=DEFAULT_CRITERIA_RANGE_BY_SERVICE_TYPE
+        )
 
     def publish_worker_profile_rated(self, worker_rating):
         worker_rating['id'] = self.service_based_random_event_id()

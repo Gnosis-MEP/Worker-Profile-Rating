@@ -1,8 +1,8 @@
 from worker_profile_rating.rating_modules.base import RatingModuleBase
 
 class RatingModuleFuzzy(RatingModuleBase):
-    def __init__(self, qos_criteria, default_criteria_ranges=None):
-        super().__init__(qos_criteria, default_criteria_ranges)
+    def __init__(self, qos_criteria, scale_ratings=True, default_criteria_ranges=None):
+        super().__init__(qos_criteria=qos_criteria, scale_ratings=scale_ratings, default_criteria_ranges=default_criteria_ranges)
         self.criteria_rating_mfs = {
             'high': (7, 9, 10), # 9, 10
             'medium_high': (5, 7, 9), # 7, 8
@@ -14,23 +14,6 @@ class RatingModuleFuzzy(RatingModuleBase):
             v[1]: k for k, v in
             sorted(self.criteria_rating_mfs.items(), key=lambda dt: dt[1][1])
         }
-
-    def get_criterion_crisp_rating_for_service_type(self, service_type, criterion, value):
-        target_lower, target_upper = self.rating_range
-        criterion_range = self.criteria_range_by_service_type.get(service_type, {}).get(criterion)
-        origin_lower, origin_upper = criterion_range
-        if origin_lower == origin_upper and origin_lower == value:
-            return target_upper
-
-        diff_to_origin_lower = (value - origin_lower)
-        target_difference = (target_upper - target_lower)
-        origin_difference = (origin_upper - origin_lower)
-
-        norm_incomplete = diff_to_origin_lower * target_difference / origin_difference
-
-        norm = target_lower + norm_incomplete
-        crisp_rating = round(norm)
-        return crisp_rating
 
 
     def get_closest_mf_to_rating_by_modal(self, crisp_rating):
